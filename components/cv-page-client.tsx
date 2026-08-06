@@ -207,8 +207,8 @@ export default function CvPageClient({ cvDownloadUrl, initialLanguage, upcomingC
                             <span className="rounded-full bg-primary/10 px-2 py-1">{concert.date}</span>
                             <span className="rounded-full bg-primary/10 px-2 py-1">{concert.city}</span>
                           </div>
-                          <h4 className="font-display text-lg font-semibold leading-tight text-white">{concert.venue}</h4>
-                          {concert.note ? <p className="mt-2 text-sm text-neutral-300">{concert.note}</p> : null}
+                          <h4 className="font-display text-lg font-semibold leading-tight text-white">{concert.note || concert.venue}</h4>
+                          {concert.note && concert.venue ? <p className="mt-1 text-sm text-neutral-300">{concert.venue}</p> : null}
                         </div>
                         <IconOpenInNew className="mt-0.5 size-5 shrink-0 text-neutral-300 transition-colors group-hover:text-primary" />
                       </a>
@@ -222,8 +222,8 @@ export default function CvPageClient({ cvDownloadUrl, initialLanguage, upcomingC
                           <span className="rounded-full bg-primary/10 px-2 py-1">{concert.date}</span>
                           <span className="rounded-full bg-primary/10 px-2 py-1">{concert.city}</span>
                         </div>
-                        <h4 className="font-display text-lg font-semibold leading-tight text-white">{concert.venue}</h4>
-                        {concert.note ? <p className="mt-2 text-sm text-neutral-300">{concert.note}</p> : null}
+                        <h4 className="font-display text-lg font-semibold leading-tight text-white">{concert.note || concert.venue}</h4>
+                        {concert.note && concert.venue ? <p className="mt-1 text-sm text-neutral-300">{concert.venue}</p> : null}
                       </article>
                     )
                   ))

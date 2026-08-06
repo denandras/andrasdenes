@@ -76,15 +76,16 @@ function parseUpcomingConcertsMarkdown(raw: string): UpcomingConcert[] {
     .map((line) => line.split("|").map((part) => part.trim()))
     .filter((parts) => parts.length >= 3)
     .map((parts) => {
-      const fourth = parts[3] || undefined;
-      const fifth = parts[4] || undefined;
+      // Format: date | city | venue | title | link
+      const fourth = parts[3] || undefined;   // title
+      const fifth = parts[4] || undefined;     // link
       const href = isLikelyHref(fifth) ? fifth : isLikelyHref(fourth) ? fourth : undefined;
       const note = href === fourth ? undefined : fourth;
 
       return {
         date: parts[0],
-        city: parts[1],
-        venue: parts[2],
+        city: parts[1] || "",
+        venue: parts[2] || "",
         note,
         href,
       };
