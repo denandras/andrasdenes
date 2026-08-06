@@ -27,6 +27,7 @@ export default function MediaGallery({
   const [scrollY, setScrollY] = useState(0);
   const [mounted, setMounted] = useState(false);
   const galleryRef = useRef<HTMLDivElement | null>(null);
+  const lightboxItemRefs = useRef<(HTMLDivElement | null)[]>([]);
 
   useEffect(() => {
     setMounted(true);
@@ -89,6 +90,15 @@ export default function MediaGallery({
       document.body.style.overflow = '';
     };
   }, [lightboxIndex, items.length, scrollY]);
+
+  // Scroll the clicked image into view when the lightbox opens (mobile horizontal scroll).
+  useEffect(() => {
+    if (lightboxIndex === null) return;
+    const node = lightboxItemRefs.current[lightboxIndex];
+    if (node) {
+      node.scrollIntoView({ behavior: "instant" as ScrollBehavior, inline: "center", block: "center" });
+    }
+  }, [lightboxIndex]);
 
   return (
     <>
@@ -203,6 +213,7 @@ export default function MediaGallery({
               return (
                 <div
                   key={item.id}
+                  ref={(el) => { lightboxItemRefs.current[idx] = el; }}
                   className="flex-shrink-0 snap-center flex items-center justify-center md:flex-shrink md:snap-start"
                   style={{ minWidth: "85vw", maxWidth: "90vw" }}
                 >
@@ -246,6 +257,23 @@ export default function MediaGallery({
           >
             ×
           </button>
+
+          {/* Download button */}
+          {(() => {
+            const current = items[lightboxIndex];
+            if (!current) return null;
+            return (
+              <a
+                href={current.downloadUrl}
+                onClick={(e) => e.stopPropagation()}
+                className="absolute top-4 right-16 z-[110] flex size-10 items-center justify-center rounded-full bg-white/10 text-white transition-colors hover:bg-white/20"
+                aria-label="Download image"
+                title="Download"
+              >
+                <IconDownload className="size-5" />
+              </a>
+            );
+          })()}
           
           {/* Navigation arrows */}
           {lightboxIndex > 0 && (
