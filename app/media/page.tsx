@@ -13,9 +13,11 @@ type MediaItem = {
   id: string;
   viewUrl: string;
   downloadUrl: string;
+  title?: string;
 };
 
 const IMAGE_EXTENSIONS = new Set(["jpg", "jpeg", "png", "webp", "gif", "avif"]);
+const MEDIA_TOKEN_TTL_MS = 60 * 60 * 1000; // 60 min
 
 export const metadata: Metadata = {
   title: "Media – András Dénes | Trombonist",
@@ -53,7 +55,8 @@ async function getMediaItems(): Promise<MediaItem[]> {
     },
   });
 
-  const keys: string[] = [];
+  // Collect keys with LastModified so we can sort fresh-to-old
+  const entries: Array<{ key: string; lastModified: number }> = [];
   let token: string | undefined;
 
   do {
@@ -69,25 +72,27 @@ async function getMediaItems(): Promise<MediaItem[]> {
     for (const obj of list.Contents ?? []) {
       if (!obj.Key) continue;
       if (!isImageKey(obj.Key)) continue;
-      keys.push(obj.Key);
+      entries.push({
+        key: obj.Key,
+        lastModified: obj.LastModified?.getTime() ?? 0,
+      });
     }
 
     token = list.IsTruncated ? list.NextContinuationToken : undefined;
   } while (token);
 
-  // Newest first when provider returns LastModified metadata.
-  // If missing, fallback to key order.
-  const sortedKeys = [...keys].sort((a, b) => b.localeCompare(a));
+  // Sort by lastModified descending (fresh to old)
+  entries.sort((a, b) => b.lastModified - a.lastModified);
 
-  return sortedKeys.map((key, index) => {
-    const ext = fileExtension(key);
+  return entries.map((entry, index) => {
+    const ext = fileExtension(entry.key);
     const ordinal = String(index + 1).padStart(3, "0");
     const safeName = `andras-denes-media-${ordinal}.${ext}`;
     const accessToken = createMediaAccessToken(
       {
-        key,
+        key: entry.key,
         name: safeName,
-        exp: Date.now() + 1000 * 60 * 60 * 24,
+        exp: Date.now() + MEDIA_TOKEN_TTL_MS,
       },
       tokenSecret,
     );

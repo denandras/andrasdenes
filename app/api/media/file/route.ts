@@ -156,7 +156,7 @@ export async function GET(request: Request) {
       headers: {
         "Content-Type": contentType,
         "Content-Disposition": disposition,
-        "Cache-Control": "public, max-age=300",
+        "Cache-Control": "public, max-age=3600",
       },
     });
   } catch {
