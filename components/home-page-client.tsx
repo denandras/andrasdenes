@@ -357,7 +357,7 @@ export default function HomePageClient({ initialLanguage }: HomePageClientProps)
             {labels.bioParagraphs.map((paragraph, idx) => (
               <p
                 key={`bio-${idx}`}
-                className={`w-full text-justify text-base leading-relaxed italic text-neutral-300 md:w-[86%] md:text-lg md:leading-8 lg:w-[82%] ${idx % 2 === 0 ? "md:self-start md:text-left" : "md:self-end md:text-right"}`}
+                className={`w-full text-justify text-base leading-relaxed italic text-neutral-300 md:w-[86%] md:text-lg md:leading-8 lg:w-[82%] pl-1 pr-1 ${idx % 2 === 0 ? "md:self-start md:text-left" : "md:self-end md:text-right"}`}
                 data-reveal
                 style={{ "--reveal-delay": `${380 + idx * 55}ms` }}
               >
