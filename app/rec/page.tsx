@@ -116,6 +116,77 @@ function VideoCard({ item }: { item: VideoItem }) {
   );
 }
 
+// Cal.com inline embed — official snippet ported to React (loads embed.js once,
+// then initializes the `denandras/rec` booking calendar into #my-cal-inline-rec).
+function CalBookingEmbed() {
+  useEffect(() => {
+    type CalApi = ((...args: unknown[]) => void) & {
+      q: unknown[][];
+      loaded?: boolean;
+      ns?: Record<string, CalApi>;
+      config?: Record<string, unknown>;
+    };
+
+    const push = (fn: { q: unknown[][] }, args: unknown[]) => {
+      fn.q.push(args);
+    };
+
+    const w = window as Window & { Cal?: CalApi };
+
+    if (!w.Cal) {
+      const CalFn = function (...args: unknown[]) {
+        const cal = w.Cal as CalApi;
+        if (!cal.loaded) {
+          cal.ns = {};
+          cal.q = cal.q || [];
+          const script = document.createElement("script");
+          script.src = "https://app.cal.com/embed/embed.js";
+          document.head.appendChild(script);
+          cal.loaded = true;
+        }
+        if (args[0] === "init") {
+          const api = function (...a: unknown[]) {
+            push(api, a);
+          } as CalApi;
+          const namespace = args[1];
+          api.q = api.q || [];
+          if (typeof namespace === "string") {
+            cal.ns = cal.ns || {};
+            cal.ns[namespace] = cal.ns[namespace] || api;
+            push(cal.ns[namespace], args);
+            push(cal, ["initNamespace", namespace]);
+          } else {
+            push(cal, args);
+          }
+          return;
+        }
+        push(cal, args);
+      } as CalApi;
+      w.Cal = CalFn;
+    }
+
+    const Cal = w.Cal as CalApi;
+    Cal("init", "rec", { origin: "https://app.cal.com" });
+    Cal.config = Cal.config || {};
+    Cal.config.forwardQueryParams = true;
+
+    const ns = Cal.ns?.rec;
+    ns?.("inline", {
+      elementOrSelector: "#my-cal-inline-rec",
+      config: { layout: "month_view", useSlotsViewOnSmallScreen: "true", theme: "dark" },
+      calLink: "denandras/rec",
+    });
+    ns?.("ui", {
+      theme: "dark",
+      cssVarsPerTheme: { light: { "cal-brand": "#1b160f" }, dark: { "cal-brand": "#f4c525" } },
+      hideEventTypeDetails: false,
+      layout: "month_view",
+    });
+  }, []);
+
+  return <div id="my-cal-inline-rec" className="h-[80vh] max-h-[780px] min-h-[560px] w-full overflow-scroll" />;
+}
+
 export default function RecPage() {
   const { language } = useSiteLanguage();
   const [activePanel, setActivePanel] = useState<"videos" | "booking" | "gear">("videos");
@@ -391,12 +462,7 @@ export default function RecPage() {
 
                 <div>
                   <div className="overflow-hidden rounded-2xl border border-neutral-border bg-background-dark/35">
-                    <iframe
-                      src="https://app.cal.eu/denandras/rec?embed=true&theme=dark&lang=en"
-                      title="Idopontfoglalas"
-                      className="min-h-[720px] w-full border-0"
-                      loading="lazy"
-                    />
+                    <CalBookingEmbed />
                   </div>
                 </div>
               </div>
