@@ -105,7 +105,7 @@ function VideoCard({ item }: { item: VideoItem }) {
       <div className="aspect-video w-full">
         <iframe
           title={item.title}
-          src={`https://www.youtube.com/embed/${item.youtubeId}`}
+          src={`https://www.youtube-nocookie.com/embed/${item.youtubeId}`}
           className="h-full w-full"
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
           referrerPolicy="strict-origin-when-cross-origin"
