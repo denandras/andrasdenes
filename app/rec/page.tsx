@@ -22,21 +22,21 @@ type GearRow = {
   href?: string;
 };
 
-const videosLeft: VideoItem[] = [
-  { title: "Tao Yun Hsiao - Ysaÿe: Sonata No. 3 in D Minor \"Ballade\"", youtubeId: "9PkM_m8DAns" },
-  { title: "Máté Szirtes plays Liszt Mephisto Waltz 1", youtubeId: "IRBojYisvl8" },
+// Selected recordings — newest first, then grouped by instrumentation
+// (brass, solo strings/winds, keyboard, vocal), promo material last.
+const videos: VideoItem[] = [
+  { title: "Brúnó Nyáry - Catchy in the Reihe (2026) [w/ score]", youtubeId: "0THCrUeBXzU" },
   { title: "Roland Szentpáli - Allegro Fuoco", youtubeId: "Us7s50k9q8A" },
+  { title: "Gkouliamtzis Konstantinos - Blazhevich", youtubeId: "fBqs0VxdR2k" },
   { title: "Ferdinand David - Concertino", youtubeId: "3S0VJmD-YrM" },
   { title: "Alexander Lebedev: Concerto in one movement", youtubeId: "aatvt6EoXFI" },
-];
-
-const videosRight: VideoItem[] = [
-  { title: "Gkouliamtzis Konstantinos - Blazhevich", youtubeId: "fBqs0VxdR2k" },
+  { title: "Tao Yun Hsiao - Ysaÿe: Sonata No. 3 in D Minor \"Ballade\"", youtubeId: "9PkM_m8DAns" },
   { title: "Sancan - Sonatine", youtubeId: "IR7nyboLEww" },
-  { title: "Kocsár - Mégis mondom Damion!", youtubeId: "MQaiWXv9rn4" },
-  { title: "Promo mashup", youtubeId: "02HPAJBEJcc" },
+  { title: "Kocsár - Mégis mondam Damion!", youtubeId: "MQaiWXv9rn4" },
+  { title: "Máté Szirtes plays Liszt Mephisto Waltz 1", youtubeId: "IRBojYisvl8" },
   { title: "Szirtes Máté - Liszt h-moll szonáta", youtubeId: "RJrhGUVjEMo" },
   { title: "Schütz - Das Wort ward Fleisch", youtubeId: "i8ur8h0gxfg" },
+  { title: "Promo mashup", youtubeId: "02HPAJBEJcc" },
 ];
 
 const hardwareRows: GearRow[] = [
@@ -413,21 +413,11 @@ export default function RecPage() {
           <div className="overflow-hidden rounded-2xl border border-neutral-border bg-neutral-dark/40 p-5 md:p-6" data-reveal style={{ ["--reveal-delay" as const]: "120ms" }}>
             {activePanel === "videos" ? (
               <div className="grid gap-4 md:grid-cols-2">
-                <div className="space-y-4">
-                  {videosLeft.map((item, index) => (
-                    <div key={item.youtubeId} data-reveal style={{ ["--reveal-delay" as const]: `${100 + index * 60}ms` }}>
-                      <VideoCard item={item} />
-                    </div>
-                  ))}
-                </div>
-
-                <div className="space-y-4">
-                  {videosRight.map((item, index) => (
-                    <div key={item.youtubeId} data-reveal style={{ ["--reveal-delay" as const]: `${140 + index * 60}ms` }}>
-                      <VideoCard item={item} />
-                    </div>
-                  ))}
-                </div>
+                {videos.map((item, index) => (
+                  <div key={item.youtubeId} data-reveal style={{ ["--reveal-delay" as const]: `${100 + index * 50}ms` }}>
+                    <VideoCard item={item} />
+                  </div>
+                ))}
               </div>
             ) : activePanel === "gear" ? (
               <div className="grid gap-6 lg:grid-cols-3">
