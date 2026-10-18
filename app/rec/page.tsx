@@ -22,21 +22,20 @@ type GearRow = {
   href?: string;
 };
 
-// Selected recordings — newest first, then grouped by instrumentation
-// (brass, solo strings/winds, keyboard, vocal), promo material last.
+// Selected recordings — Nyáry (2026) first, then the previous display order.
 const videos: VideoItem[] = [
   { title: "Brúnó Nyáry - Catchy in the Reihe (2026) [w/ score]", youtubeId: "0THCrUeBXzU" },
-  { title: "Roland Szentpáli - Allegro Fuoco", youtubeId: "Us7s50k9q8A" },
-  { title: "Gkouliamtzis Konstantinos - Blazhevich", youtubeId: "fBqs0VxdR2k" },
-  { title: "Ferdinand David - Concertino", youtubeId: "3S0VJmD-YrM" },
-  { title: "Alexander Lebedev: Concerto in one movement", youtubeId: "aatvt6EoXFI" },
   { title: "Tao Yun Hsiao - Ysaÿe: Sonata No. 3 in D Minor \"Ballade\"", youtubeId: "9PkM_m8DAns" },
-  { title: "Sancan - Sonatine", youtubeId: "IR7nyboLEww" },
-  { title: "Kocsár - Mégis mondam Damion!", youtubeId: "MQaiWXv9rn4" },
+  { title: "Gkouliamtzis Konstantinos - Blazhevich", youtubeId: "fBqs0VxdR2k" },
   { title: "Máté Szirtes plays Liszt Mephisto Waltz 1", youtubeId: "IRBojYisvl8" },
+  { title: "Sancan - Sonatine", youtubeId: "IR7nyboLEww" },
+  { title: "Roland Szentpáli - Allegro Fuoco", youtubeId: "Us7s50k9q8A" },
+  { title: "Kocsár - Mégis mondam Damion!", youtubeId: "MQaiWXv9rn4" },
+  { title: "Ferdinand David - Concertino", youtubeId: "3S0VJmD-YrM" },
+  { title: "Promo mashup", youtubeId: "02HPAJBEJcc" },
+  { title: "Alexander Lebedev: Concerto in one movement", youtubeId: "aatvt6EoXFI" },
   { title: "Szirtes Máté - Liszt h-moll szonáta", youtubeId: "RJrhGUVjEMo" },
   { title: "Schütz - Das Wort ward Fleisch", youtubeId: "i8ur8h0gxfg" },
-  { title: "Promo mashup", youtubeId: "02HPAJBEJcc" },
 ];
 
 const hardwareRows: GearRow[] = [
