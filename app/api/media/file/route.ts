@@ -30,8 +30,23 @@ function isSupportedMediaKey(key: string) {
   return IMAGE_EXTENSIONS.has(ext) || DOCUMENT_EXTENSIONS.has(ext);
 }
 
+function encodeRfc5987Name(name: string) {
+  // RFC 5987 ext-value: encodeURIComponent + the few chars it leaves unescaped
+  return encodeURIComponent(name).replace(/[!'()*]/g, (c) =>
+    `%${c.charCodeAt(0).toString(16).toUpperCase()}`,
+  );
+}
+
 function sanitizeDownloadName(name: string) {
   return name.replace(/[^a-zA-Z0-9._-]/g, "-");
+}
+
+function contentDisposition(name: string, type: "attachment" | "inline") {
+  if (type === "inline") return "inline";
+  const safeName = sanitizeDownloadName(name);
+  const utf8Name = encodeRfc5987Name(name);
+  // fallback filename keeps legacy support; filename* carries the real UTF-8 name
+  return `attachment; filename="${safeName}"; filename*=UTF-8''${utf8Name}`;
 }
 
 function isAllowedPrefixKey(key: string, prefix: string) {
@@ -146,10 +161,7 @@ export async function GET(request: Request) {
 
     const stream = output.Body.transformToWebStream();
     const contentType = output.ContentType || fallbackContentType(key);
-    const safeName = sanitizeDownloadName(payload.name || "image.jpg");
-    const disposition = download
-      ? `attachment; filename="${safeName}"`
-      : "inline";
+    const disposition = contentDisposition(payload.name || "image.jpg", download ? "attachment" : "inline");
 
     return new Response(stream, {
       status: 200,
