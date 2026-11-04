@@ -94,27 +94,42 @@ export default function CvPageClient({ cvDownloadUrl, initialLanguage, upcomingC
   const { language } = useSiteLanguage(initialLanguage);
 
   useEffect(() => {
-    const nodes = Array.from(document.querySelectorAll<HTMLElement>("[data-reveal]"));
-    if (!nodes.length) return;
-
-    const observer = new IntersectionObserver(
+    // Reveal-on-scroll for [data-reveal] nodes — INCLUDING nodes that mount
+    // later (e.g. the concerts section mounts after router.refresh() on an
+    // HU switch, after this effect previously ran). The old one-shot query
+    // raced the refresh and left freshly mounted sections at opacity 0.001.
+    const observed = new WeakSet<Element>();
+    const io = new IntersectionObserver(
       (entries) => {
         for (const entry of entries) {
           if (entry.isIntersecting) {
             entry.target.classList.add("is-visible");
-            observer.unobserve(entry.target);
+            io.unobserve(entry.target);
           }
         }
       },
       { threshold: 0.08, rootMargin: "0px 0px -6% 0px" },
     );
 
-    nodes.forEach((node) => observer.observe(node));
+    const observeAll = () => {
+      document.querySelectorAll<HTMLElement>("[data-reveal]").forEach((node) => {
+        if (node.classList.contains("is-visible")) return;
+        if (observed.has(node)) return;
+        observed.add(node);
+        io.observe(node);
+      });
+    };
+
+    observeAll();
+
+    const mo = new MutationObserver(() => observeAll());
+    mo.observe(document.body, { childList: true, subtree: true });
 
     return () => {
-      observer.disconnect();
+      io.disconnect();
+      mo.disconnect();
     };
-  }, [language]);
+  }, []);
 
   const labels = language === "hu"
     ? {
