@@ -114,7 +114,7 @@ export default function CvPageClient({ cvDownloadUrl, initialLanguage, upcomingC
     return () => {
       observer.disconnect();
     };
-  }, []);
+  }, [language]);
 
   const labels = language === "hu"
     ? {
@@ -191,10 +191,10 @@ export default function CvPageClient({ cvDownloadUrl, initialLanguage, upcomingC
 
               <div className="space-y-3">
                 {upcomingConcerts.length > 0 ? (
-                  upcomingConcerts.map((concert) => (
+                  upcomingConcerts.map((concert, concertIdx) => (
                     concert.href ? (
                       <a
-                        key={`${concert.date}-${concert.city}-${concert.venue}`}
+                        key={`${concert.date}-${concert.city}-${concert.venue}-${concertIdx}`}
                         href={concert.href}
                         target="_blank"
                         rel="noreferrer"
@@ -214,7 +214,7 @@ export default function CvPageClient({ cvDownloadUrl, initialLanguage, upcomingC
                       </a>
                     ) : (
                       <article
-                        key={`${concert.date}-${concert.city}-${concert.venue}`}
+                        key={`${concert.date}-${concert.city}-${concert.venue}-${concertIdx}`}
                         className="interactive-surface group rounded-xl border border-neutral-border bg-neutral-dark/40 p-5 transition-all hover:border-primary/30 hover:bg-neutral-dark"
                         data-proximity
                       >

@@ -93,6 +93,11 @@ export default function LanguageSwitcher({
   const setAndRefresh = (next: SiteLanguage) => {
     if (next === activeLanguage || isSwitching) return;
     setIsSwitching(true);
+    // Persist BEFORE router.refresh(): the refresh request must carry the new
+    // language cookie, otherwise the server responds with the old initialLanguage
+    // and the sync effect in useSiteLanguage reverts the toggle (bug: EN->HU
+    // showed EN content with the concerts section unmounted).
+    persistLanguage(next);
     setLanguage(next);
     router.refresh();
   };
