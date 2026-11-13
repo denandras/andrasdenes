@@ -7,6 +7,7 @@ import BrandMark from "@/components/brand-mark";
 import LanguageSwitcher, { useSiteLanguage } from "@/components/language-switcher";
 import { IconDownload, IconLocation, IconOpenInNew } from "@/components/icons";
 import type { SiteLanguage } from "@/lib/site-language";
+import { BorderBeam } from "border-beam";
 
 type CvPageClientProps = {
   cvDownloadUrl: string | null;
@@ -94,42 +95,27 @@ export default function CvPageClient({ cvDownloadUrl, initialLanguage, upcomingC
   const { language } = useSiteLanguage(initialLanguage);
 
   useEffect(() => {
-    // Reveal-on-scroll for [data-reveal] nodes — INCLUDING nodes that mount
-    // later (e.g. the concerts section mounts after router.refresh() on an
-    // HU switch, after this effect previously ran). The old one-shot query
-    // raced the refresh and left freshly mounted sections at opacity 0.001.
-    const observed = new WeakSet<Element>();
-    const io = new IntersectionObserver(
+    const nodes = Array.from(document.querySelectorAll<HTMLElement>("[data-reveal]"));
+    if (!nodes.length) return;
+
+    const observer = new IntersectionObserver(
       (entries) => {
         for (const entry of entries) {
           if (entry.isIntersecting) {
             entry.target.classList.add("is-visible");
-            io.unobserve(entry.target);
+            observer.unobserve(entry.target);
           }
         }
       },
       { threshold: 0.08, rootMargin: "0px 0px -6% 0px" },
     );
 
-    const observeAll = () => {
-      document.querySelectorAll<HTMLElement>("[data-reveal]").forEach((node) => {
-        if (node.classList.contains("is-visible")) return;
-        if (observed.has(node)) return;
-        observed.add(node);
-        io.observe(node);
-      });
-    };
-
-    observeAll();
-
-    const mo = new MutationObserver(() => observeAll());
-    mo.observe(document.body, { childList: true, subtree: true });
+    nodes.forEach((node) => observer.observe(node));
 
     return () => {
-      io.disconnect();
-      mo.disconnect();
+      observer.disconnect();
     };
-  }, []);
+  }, [language]);
 
   const labels = language === "hu"
     ? {
@@ -314,15 +300,17 @@ export default function CvPageClient({ cvDownloadUrl, initialLanguage, upcomingC
 
           {cvDownloadUrl ? (
             <div className="pt-8" data-reveal>
-              <a
-                href={cvDownloadUrl}
-                className="interactive-surface group flex w-full items-center justify-center gap-2 rounded-xl border border-primary/20 bg-primary/5 px-5 py-3 font-display font-semibold text-neutral-100 transition-all hover:border-primary/35 hover:bg-primary/10"
-                data-proximity
-                data-proximity-strength="2.1"
-              >
-                <IconDownload className="size-4 text-primary" />
-                {labels.downloadCv}
-              </a>
+              <BorderBeam size="pulse-inner" colorVariant="mono" theme="dark" strength={0.7} duration={2.6}>
+                <a
+                  href={cvDownloadUrl}
+                  className="interactive-surface group flex w-full items-center justify-center gap-2 rounded-xl border border-primary/20 bg-primary/5 px-5 py-3 font-display font-semibold text-neutral-100 transition-all hover:border-primary/35 hover:bg-primary/10"
+                  data-proximity
+                  data-proximity-strength="2.1"
+                >
+                  <IconDownload className="size-4 text-primary" />
+                  {labels.downloadCv}
+                </a>
+              </BorderBeam>
             </div>
           ) : null}
         </div>

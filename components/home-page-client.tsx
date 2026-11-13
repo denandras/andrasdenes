@@ -231,7 +231,7 @@ export default function HomePageClient({ initialLanguage }: HomePageClientProps)
                   id="yt-featured"
                   ref={iframeRef}
                   className="h-full w-full opacity-0 transition-opacity duration-1000 ease-in-out"
-                  src="https://www.youtube-nocookie.com/embed/KSJdV6QJ6Ec?autoplay=1&mute=1&loop=1&playlist=KSJdV6QJ6Ec&rel=0&modestbranding=1&playsinline=1&enablejsapi=1"
+                  src="https://www.youtube.com/embed/KSJdV6QJ6Ec?autoplay=1&mute=1&loop=1&playlist=KSJdV6QJ6Ec&rel=0&modestbranding=1&playsinline=1&enablejsapi=1"
                   title={labels.videoCaption}
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                   allowFullScreen

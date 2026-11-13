@@ -10,7 +10,8 @@ import {
   IconPhone,
 } from "@/components/icons";
 import type { SiteLanguage } from "@/lib/site-language";
-import { useEffect } from "react";
+import { BorderBeam } from "border-beam";
+import { useEffect, useState } from "react";
 
 type ContactPageClientProps = {
   initialLanguage: SiteLanguage;
@@ -18,6 +19,10 @@ type ContactPageClientProps = {
 
 export default function ContactPageClient({ initialLanguage }: ContactPageClientProps) {
   const { language } = useSiteLanguage(initialLanguage);
+
+  // BorderBeam beams fade in/out with the built-in `active` transition —
+  // hover/focus drives them so the glow never pops in abruptly.
+  const [beamHover, setBeamHover] = useState<{ send: boolean; email: boolean }>({ send: false, email: false });
 
   const labels = language === "hu"
     ? {
@@ -109,11 +114,16 @@ export default function ContactPageClient({ initialLanguage }: ContactPageClient
             <div className="relative md:col-span-8 md:order-2">
               <div className="relative z-10 space-y-3 md:pt-10">
                 <div data-reveal style={{ "--reveal-delay": "120ms" }}>
-                  <a
-                    href="mailto:contact@andrasdenes.com"
-                    className="interactive-surface group flex items-center justify-between rounded-xl border border-neutral-border bg-neutral-dark/40 p-5 transition-all hover:border-primary/30 hover:bg-neutral-dark"
-                    data-proximity
-                  >
+                  <BorderBeam size="pulse-inner" colorVariant="mono" theme="dark" strength={0.7} duration={2.6} active={beamHover.email}>
+                    <a
+                      href="mailto:contact@andrasdenes.com"
+                      className="interactive-surface group flex items-center justify-between rounded-xl border border-neutral-border bg-neutral-dark/40 p-5 transition-all hover:border-primary/30 hover:bg-neutral-dark"
+                      data-proximity
+                      onMouseEnter={() => setBeamHover((prev) => (prev.email ? prev : { ...prev, email: true }))}
+                      onMouseLeave={() => setBeamHover((prev) => (prev.email ? { ...prev, email: false } : prev))}
+                      onFocus={() => setBeamHover((prev) => (prev.email ? prev : { ...prev, email: true }))}
+                      onBlur={() => setBeamHover((prev) => (prev.email ? { ...prev, email: false } : prev))}
+                    >
                     <div className="flex items-center gap-4">
                       <div className="flex size-12 items-center justify-center rounded-lg bg-primary/20 text-primary">
                         <IconMail className="size-5" />
@@ -125,6 +135,7 @@ export default function ContactPageClient({ initialLanguage }: ContactPageClient
                     </div>
                     <IconOpenInNew className="size-5 text-neutral-300 transition-colors group-hover:text-primary" />
                   </a>
+                  </BorderBeam>
                 </div>
 
                 <div data-reveal style={{ "--reveal-delay": "180ms" }}>
@@ -185,7 +196,7 @@ export default function ContactPageClient({ initialLanguage }: ContactPageClient
               <div className="relative z-10 space-y-3 md:pt-10">
                 <div data-reveal style={{ "--reveal-delay": "120ms" }}>
                   <section className="rounded-2xl border border-neutral-border bg-neutral-dark/40 p-6">
-                    <form action="https://formsubmit.co/contact@andrasdenes.com" method="POST" className="space-y-4" noValidate>
+                    <form action="https://formsubmit.co/contact@andrasdenes.com" method="POST" className="space-y-4">
                       <input type="hidden" name="_subject" value={labels.subject} />
                       <input type="hidden" name="_template" value="table" />
                       <input type="hidden" name="_captcha" value="false" />
@@ -233,13 +244,27 @@ export default function ContactPageClient({ initialLanguage }: ContactPageClient
                         />
                       </div>
 
-                      <button
-                        type="submit"
-                        className="interactive-surface w-full cursor-pointer rounded-xl border border-primary/10 bg-primary/5 py-4 font-display font-bold text-neutral-100 transition-colors hover:bg-primary/10"
-                        data-proximity
+                      <BorderBeam
+                        size="pulse-inner"
+                        colorVariant="mono"
+                        theme="dark"
+                        strength={0.7}
+                        duration={2.6}
+                        active={beamHover.send}
+                        className="w-full"
                       >
-                        {labels.send}
-                      </button>
+                        <button
+                          type="submit"
+                          className="interactive-surface w-full cursor-pointer rounded-xl border border-primary/10 bg-primary/5 py-4 font-display font-bold text-neutral-100 transition-colors hover:bg-primary/10"
+                          data-proximity
+                          onMouseEnter={() => setBeamHover((prev) => (prev.send ? prev : { ...prev, send: true }))}
+                          onMouseLeave={() => setBeamHover((prev) => (prev.send ? { ...prev, send: false } : prev))}
+                          onFocus={() => setBeamHover((prev) => (prev.send ? prev : { ...prev, send: true }))}
+                          onBlur={() => setBeamHover((prev) => (prev.send ? { ...prev, send: false } : prev))}
+                        >
+                          {labels.send}
+                        </button>
+                      </BorderBeam>
                     </form>
                   </section>
                 </div>

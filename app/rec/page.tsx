@@ -7,8 +7,23 @@ import FitText from "@/components/fit-text";
 import LanguageSwitcher, { useSiteLanguage } from "@/components/language-switcher";
 import { IconCamera, IconGroups, IconOpenInNew, IconSchedule } from "@/components/icons";
 import { useEffect, useRef, useState } from "react";
+import { VoiceBeam } from "voice-glow";
+import { Liquid } from "liquid-gooey";
+import { useYoutubePlayState } from "@/components/use-youtube-play-state";
 
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
+
+const PANEL_ORDER = ["videos", "gear", "booking"] as const;
+
+// Synthetic playback envelope: the YouTube iframe is cross-origin and its
+// audio cannot be sampled, so while the player reports "playing" the glow's
+// amplitude follows a smooth, music-like undulation derived from clock time.
+const playbackLevel = (): number => {
+  const t = performance.now() / 1000;
+  const slow = 0.6 + 0.2 * Math.sin(t * 1.57 + 0.4) + 0.1 * Math.sin(t * 2.9 + 2.1);
+  const flutter = 0.5 + 0.22 * Math.sin(t * 5.9) + 0.16 * Math.sin(t * 9.7 + 1.1);
+  return Math.min(1, Math.max(0.1, slow * 0.62 + flutter * 0.38));
+};
 
 type VideoItem = {
   title: string;
@@ -99,19 +114,34 @@ function GearTable({ rows, language }: { rows: GearRow[]; language: "hu" | "en" 
 }
 
 function VideoCard({ item }: { item: VideoItem }) {
+  const iframeRef = useRef<HTMLIFrameElement | null>(null);
+  const playing = useYoutubePlayState(iframeRef);
+
   return (
-    <div className="overflow-hidden rounded-2xl border border-neutral-border bg-neutral-dark/40">
-      <div className="aspect-video w-full">
-        <iframe
-          title={item.title}
-          src={`https://www.youtube-nocookie.com/embed/${item.youtubeId}`}
-          className="h-full w-full"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-          referrerPolicy="strict-origin-when-cross-origin"
-          allowFullScreen
-        />
+    <VoiceBeam
+      active={playing}
+      idle={0}
+      level={playing ? playbackLevel : 0}
+      colorVariant="gold"
+      theme="dark"
+      strength={0.9}
+      scale={1.45}
+      flow={42}
+    >
+      <div className="overflow-hidden rounded-2xl border border-neutral-border bg-neutral-dark/40">
+        <div className="aspect-video w-full">
+          <iframe
+            ref={iframeRef}
+            title={item.title}
+            src={`https://www.youtube-nocookie.com/embed/${item.youtubeId}?enablejsapi=1`}
+            className="h-full w-full"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            referrerPolicy="strict-origin-when-cross-origin"
+            allowFullScreen
+          />
+        </div>
       </div>
-    </div>
+    </VoiceBeam>
   );
 }
 
@@ -192,6 +222,50 @@ export default function RecPage() {
   const heroRef = useRef<HTMLElement | null>(null);
   const [headerProgress, setHeaderProgress] = useState(0);
   const [heroImageLoaded, setHeroImageLoaded] = useState(false);
+
+  // Liquid indicator blob: measured rect of the active switcher button.
+  const switcherRef = useRef<HTMLDivElement | null>(null);
+  const switchButtonRefs = useRef<Array<HTMLButtonElement | null>>([]);
+  const [blobRect, setBlobRect] = useState<{ x: number; y: number; w: number; h: number } | null>(null);
+
+  useEffect(() => {
+    const measure = () => {
+      const container = switcherRef.current;
+      if (!container) return;
+      const button = switchButtonRefs.current[PANEL_ORDER.indexOf(activePanel)];
+      if (!button) return;
+      const cRect = container.getBoundingClientRect();
+      const bRect = button.getBoundingClientRect();
+      const next = {
+        x: Math.round(bRect.left - cRect.left),
+        y: Math.round(bRect.top - cRect.top),
+        w: Math.round(bRect.width),
+        h: Math.round(bRect.height),
+      };
+      setBlobRect((prev) =>
+        prev && prev.x === next.x && prev.y === next.y && prev.w === next.w && prev.h === next.h
+          ? prev
+          : next,
+      );
+    };
+
+    measure();
+    const raf = requestAnimationFrame(measure);
+    let fontsRaf = 0;
+    let cancelled = false;
+    if (typeof document !== "undefined" && document.fonts?.ready) {
+      void document.fonts.ready.then(() => {
+        if (!cancelled) fontsRaf = requestAnimationFrame(measure);
+      });
+    }
+    window.addEventListener("resize", measure);
+    return () => {
+      cancelled = true;
+      cancelAnimationFrame(raf);
+      if (fontsRaf) cancelAnimationFrame(fontsRaf);
+      window.removeEventListener("resize", measure);
+    };
+  }, [activePanel, language]);
 
   const labels = language === "hu"
     ? {
@@ -347,11 +421,41 @@ export default function RecPage() {
               <p className="text-sm leading-7 text-neutral-300 md:text-base">{labels.intro2}</p>
             </div>
 
-            <div className="flex flex-col gap-3 md:h-full" data-reveal style={{ ["--reveal-delay" as const]: "180ms" }}>
+            <div ref={switcherRef} className="relative flex flex-col gap-3 md:h-full" data-reveal style={{ ["--reveal-delay" as const]: "180ms" }}>
+              {blobRect ? (
+                <Liquid
+                  aria-hidden
+                  className="pointer-events-none absolute inset-0 z-0 opacity-[0.16]"
+                  blur={7}
+                  contrast={26}
+                  fill="#f4c525"
+                  filterPadding={28}
+                >
+                  <Liquid.Item effect="move" move={{ springiness: 0.5, trail: 0.575 }}>
+                    {/* effect="move": we move the element (absolute, transform),
+                        the liquid silhouette trails it with the spring+tail. */}
+                    <div
+                      className="rounded-xl"
+                      style={{
+                        position: "absolute",
+                        left: 0,
+                        top: 0,
+                        width: blobRect.w,
+                        height: blobRect.h,
+                        transform: `translate(${blobRect.x}px, ${blobRect.y}px)`,
+                      }}
+                    />
+                  </Liquid.Item>
+                </Liquid>
+              ) : null}
+
               <button
                 type="button"
+                ref={(el) => {
+                  switchButtonRefs.current[PANEL_ORDER.indexOf("videos")] = el;
+                }}
                 onClick={() => setActivePanel("videos")}
-                className={`interactive-surface rounded-xl border px-4 py-3 text-left transition-colors ${
+                className={`interactive-surface relative z-10 rounded-xl border px-4 py-3 text-left transition-colors ${
                   activePanel === "videos"
                     ? "border-primary/40 bg-primary/15"
                     : "border-neutral-border bg-neutral-dark/40 hover:border-primary/25 hover:bg-neutral-dark"
@@ -369,8 +473,11 @@ export default function RecPage() {
 
               <button
                 type="button"
+                ref={(el) => {
+                  switchButtonRefs.current[PANEL_ORDER.indexOf("gear")] = el;
+                }}
                 onClick={() => setActivePanel("gear")}
-                className={`interactive-surface rounded-xl border px-4 py-3 text-left transition-colors ${
+                className={`interactive-surface relative z-10 rounded-xl border px-4 py-3 text-left transition-colors ${
                   activePanel === "gear"
                     ? "border-primary/40 bg-primary/15"
                     : "border-neutral-border bg-neutral-dark/40 hover:border-primary/25 hover:bg-neutral-dark"
@@ -388,8 +495,11 @@ export default function RecPage() {
 
               <button
                 type="button"
+                ref={(el) => {
+                  switchButtonRefs.current[PANEL_ORDER.indexOf("booking")] = el;
+                }}
                 onClick={() => setActivePanel("booking")}
-                className={`interactive-surface rounded-xl border px-4 py-3 text-left transition-colors ${
+                className={`interactive-surface relative z-10 rounded-xl border px-4 py-3 text-left transition-colors ${
                   activePanel === "booking"
                     ? "border-primary/40 bg-primary/15"
                     : "border-neutral-border bg-neutral-dark/40 hover:border-primary/25 hover:bg-neutral-dark"

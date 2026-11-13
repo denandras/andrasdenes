@@ -12,6 +12,83 @@ type MediaItem = {
   downloadUrl: string;
 };
 
+/**
+ * Gallery card: static aspect-ratio frame, one persistent <img>, 300 ms
+ * opacity crossfade on load. No WebGL mosaic, no pulse, no zoom — calm
+ * progressive loading. `shouldReveal` comes from the parent's hidden
+ * preloader; the card's own onLoad also shows the photo (first wins).
+ */
+function FxCard({
+  src,
+  shouldReveal,
+  alt,
+  backgroundClassName = "",
+  onRevealed,
+}: {
+  src: string;
+  shouldReveal: boolean;
+  alt: string;
+  backgroundClassName?: string;
+  onRevealed: () => void;
+}) {
+  const [mounted, setMounted] = useState(false);
+  const [ratio, setRatio] = useState("4 / 3");
+  const [loaded, setLoaded] = useState(false);
+
+  useEffect(() => setMounted(true), []);
+
+  // Probe the image's natural aspect ratio (browser HTTP-caches the fetch;
+  // this is the same URL the lightbox shows).
+  useEffect(() => {
+    if (!mounted) return;
+    // document.createElement: `Image` here is shadowed by the next/image import.
+    const probe = document.createElement("img");
+    probe.src = src;
+    const apply = () => {
+      if (probe.naturalWidth > 0 && probe.naturalHeight > 0) {
+        setRatio(`${probe.naturalWidth} / ${probe.naturalHeight}`);
+      }
+    };
+    if (probe.complete) apply();
+    else {
+      probe.onload = apply;
+    }
+    return () => {
+      probe.onload = null;
+    };
+  }, [src, mounted]);
+
+  // Calm loading: one persistent <img> inside a stable aspect-ratio frame,
+  // 300 ms opacity crossfade on load. No WebGL mosaic, no pulse, no zoom,
+  // no swap-flash. `shouldReveal` (parent preloader) + own onLoad both show
+  // the photo — first one wins.
+  const show = shouldReveal || loaded;
+  return (
+    <div
+      className={`relative w-full ${backgroundClassName}`}
+      style={{ aspectRatio: ratio }}
+      role="img"
+      aria-label={alt}
+      onContextMenu={(e) => e.preventDefault()}
+    >
+      <img
+        src={src}
+        alt={alt}
+        loading="lazy"
+        decoding="async"
+        draggable={false}
+        onLoad={() => {
+          setLoaded(true);
+          onRevealed();
+        }}
+        className={`absolute inset-0 h-full w-full select-none object-cover transition-opacity duration-300 ease-out ${
+          mounted && show ? "opacity-100" : "opacity-0"
+        }`}
+      />
+    </div>
+  );
+}
+
 export default function MediaGallery({
   items,
   showDownload = true,
@@ -102,7 +179,6 @@ export default function MediaGallery({
           const isLoaded = !!loadedIds[item.id];
           const hasFailed = !!failedIds[item.id];
           const isVisible = !!visibleIds[item.id] || index < 6;
-          const prioritized = index < 6;
 
           return (
             <div key={item.id} data-card-id={item.id} className="mb-4 break-inside-avoid">
@@ -113,33 +189,32 @@ export default function MediaGallery({
                 onDragStart={(e) => e.preventDefault()}
                 style={{ cursor: isLoaded && !hasFailed ? "pointer" : "default" }}
               >
-                {/* Placeholder — always visible, fixed aspect ratio */}
-                {!isLoaded && !hasFailed && (
-                  <div className="relative w-full" style={{ aspectRatio: "4 / 3" }}>
-                    <div className="absolute inset-0 animate-pulse bg-neutral-dark/70" />
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      {isVisible ? (
-                        <svg className="h-6 w-6 animate-spin text-primary/30" fill="none" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" />
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                        </svg>
-                      ) : (
-                        <svg className="h-8 w-8 text-neutral-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="m2.25 15.75 5.159-5.257a3 3 0 0 1 4.311 0l5.18 5.26M3 19.5h18M3 19.5V5.25A2.25 2.25 0 0 1 5.25 3h13.5A2.25 2.25 0 0 1 21 5.25V19.5" />
-                        </svg>
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                {/* Failed state */}
-                {hasFailed && (
+                {/* persistent tile: static frame + opacity crossfade on load */}
+                {hasFailed ? (
                   <div className="relative flex w-full items-center justify-center bg-neutral-dark/60" style={{ aspectRatio: "4 / 3" }}>
                     <p className="text-sm text-neutral-500">Image failed to load.</p>
                   </div>
+                ) : !isVisible ? (
+                  // Not yet triggered — static pulse placeholder
+                  <div className="relative w-full" style={{ aspectRatio: "4 / 3" }}>
+                    <div className="absolute inset-0 animate-pulse bg-neutral-dark/70" />
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <svg className="h-8 w-8 text-neutral-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="m2.25 15.75 5.159-5.257a3 3 0 0 1 4.311 0l5.18 5.26M3 19.5h18M3 19.5V5.25A2.25 2.25 0 0 1 5.25 3h13.5A2.25 2.25 0 0 1 21 5.25V19.5" />
+                      </svg>
+                    </div>
+                  </div>
+                ) : (
+                  <FxCard
+                    src={item.viewUrl}
+                    shouldReveal={isLoaded}
+                    alt={item.title || `Gallery image ${index + 1}`}
+                    backgroundClassName={imageBackgroundClassName}
+                    onRevealed={() => setLoadedIds((prev) => (prev[item.id] ? prev : { ...prev, [item.id]: true }))}
+                  />
                 )}
 
-                {/* Hidden loader img — fires onLoad, then we promote */}
+                {/* Hidden loader img — fires onLoad (drives the reveal) / onError (failure state) */}
                 {isVisible && !isLoaded && !hasFailed && (
                   <img
                     src={item.viewUrl}
@@ -150,23 +225,9 @@ export default function MediaGallery({
                   />
                 )}
 
-                {/* Loaded image — fade in */}
+                {/* Title + download once the photo is revealed */}
                 {isLoaded && !hasFailed && (
                   <>
-                    <div className="relative select-none">
-                      <Image
-                        src={item.viewUrl}
-                        alt={item.title || `Gallery image ${index + 1}`}
-                        width={800}
-                        height={600}
-                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                        quality={70}
-                        loading={prioritized ? "eager" : "lazy"}
-                        className={`gallery-img-reveal block h-auto w-full object-cover ${imageBackgroundClassName}`}
-                        draggable={false}
-                        onContextMenu={(e) => e.preventDefault()}
-                      />
-                    </div>
                     {item.title && (
                       <div className="px-4 py-3">
                         <p className="text-sm font-medium text-neutral-200">{item.title}</p>
