@@ -271,7 +271,7 @@ export default function RecPage() {
     ? {
         header: "Felvétel",
         title: "Felvételkészítés",
-        intro1: "Mikor a Zeneakadémiára kerültem, kezdett el érdekelni ez az oldala a zenének: hogyan lehet a valósághoz leginkább hű, mégsem unalmas módon rögzíteni azt, amit szeretnénk? Mitől lesz megnyerő egy felvétel a többi beérkező versenyzőhöz képest?",
+        intro1: "Mikor a Zeneakadémiára kerültem, kezdett el érdekelni ez az oldala a zenének: hogyan lehet a valósághoz leginkább hű, mégsem unalmas módon rögzíteni azt, amit játszunk, úgy, ahogy hallani szeretnénk? Mitől lesz megnyerő egy felvétel a többi beérkező versenyzőhöz képest?",
         intro2: "Az évek során technikai tudásomat saját és külső tapasztalatok alapján bővítettem. Több mint 80 felvételt készítettem főként zeneakadémisták számára; az alábbi példák és az eszközlista ezt a munkát mutatják be.",
         videos: "Válogatott felvételek",
         gearTitle: "Eszközök",
@@ -286,7 +286,7 @@ export default function RecPage() {
     : {
         header: "Recording",
         title: "Recording Sessions",
-        intro1: "When I enrolled at the Liszt Academy, I became increasingly interested in this side of music: how to capture a performance as truthfully as possible without making it feel flat or dull. What makes one recording stand out from the many others submitted for the same opportunity?",
+        intro1: "When I enrolled at the Liszt Academy, I became increasingly interested in this side of music: how to capture what we play as truthfully as possible — and never dull — the way we want to hear it. What makes one recording stand out from the many others submitted for the same opportunity?",
         intro2: "Over the years I expanded my technical practice through both personal and external experience. I have created more than 50 recordings, mainly for students of the Academy, and the examples and equipment list below reflect that work.",
         videos: "Selected Recordings",
         gearTitle: "Equipment",

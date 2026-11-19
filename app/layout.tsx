@@ -33,10 +33,10 @@ export const metadata: Metadata = {
     siteName: "András Dénes",
     images: [
       {
-        url: "/profile.jpeg",
+        url: "/og-rec.jpg",
         width: 1200,
-        height: 1200,
-        alt: "András Dénes - Trombonist",
+        height: 630,
+        alt: "Recording session – András Dénes, trombonist and recording engineer",
       },
     ],
     locale: "hu_HU",
@@ -46,7 +46,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "András Dénes | Trombonist",
     description: "Hungarian trombonist based in Budapest. Principal trombone of Alba Regia Symphony Orchestra.",
-    images: ["/profile.jpeg"],
+    images: ["/og-rec.jpg"],
   },
 };
 
