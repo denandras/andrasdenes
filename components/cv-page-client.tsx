@@ -25,6 +25,7 @@ const cvSections = [
   {
     title: "Competitions",
     items: [
+      { era: "2026", title: "Thailand International Trombone Competition", detail: "2nd prize" },
       { era: "2024", title: "Davison Young Musicians Foundation National Brass Competition", detail: "3rd prize" },
       { era: "2023", title: "International Trombone Association (Frank Smith Competition)", detail: "1st prize" },
       { era: "2022", title: "43rd Brass and Percussion Meeting and Competition", detail: "1st prize" },
@@ -60,6 +61,7 @@ const cvSectionsHu = [
   {
     title: "Versenyek",
     items: [
+      { era: "2026", title: "Thailand International Trombone Competition", detail: "II. díj" },
       { era: "2024", title: "Davison Young Musicians Foundation Országos Rézfúvós Verseny", detail: "III. díj" },
       { era: "2023", title: "ITF (Frank Smith) Nemzetközi Harsonaverseny", detail: "I. díj" },
       { era: "2022", title: "43. Rézfúvós és Ütőhangszeres Találkozó és Verseny", detail: "I. díj" },
@@ -76,7 +78,7 @@ const cvSectionsHu = [
     items: [
       { era: "2025", title: "Próbajátékot nyert az Óbudai Danubia Zenekarba", detail: "Győztes" },
       { era: "2024", title: "Próbajátékot nyert az Alba Regia Szimfonikus Zenekarba", detail: "Győztes" },
-      { era: "2024", title: "Eredményes próbajáték a Magyar Állami Operaházba", detail: "Sikeres" },
+      { era: "2024", title: "Eredményes próbajáték a Magyar Állami Operaházba", detail: "Eredményes" },
     ],
   },
   {
