@@ -63,7 +63,6 @@ export default function RootLayout({
         <link rel="prefetch" href="/cv" />
         <link rel="prefetch" href="/media" />
         <link rel="prefetch" href="/contact" />
-        <link rel="prefetch" href="/rec" />
         <link rel="prefetch" href="/art" />
         <script
           type="application/ld+json"
